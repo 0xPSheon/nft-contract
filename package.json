@@ -5,7 +5,8 @@
   "scripts": {
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
-    "contract-size": "npx hardhat size-contracts"
+    "contract-size": "npx hardhat size-contracts",
+    "generate-abi": "npx hardhat export-abi"
   },
   "repository": {
     "type": "git",
@@ -16,6 +17,7 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-viem": "^2.0.0",
     "hardhat": "^2.19.3",
+    "hardhat-abi-exporter": "^2.10.1",
     "hardhat-contract-sizer": "^2.10.0"
   },
   "dependencies": {
