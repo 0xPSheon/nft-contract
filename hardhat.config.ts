@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox-viem";
+import "@nomicfoundation/hardhat-verify";
 import "hardhat-contract-sizer";
 import "hardhat-abi-exporter";
 import "hardhat-docgen";
