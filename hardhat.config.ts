@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox-viem";
+import "hardhat-contract-sizer";
 
 const config: HardhatUserConfig = {
   solidity: {
