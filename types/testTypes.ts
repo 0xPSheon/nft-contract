@@ -1,14 +1,14 @@
 interface PhaseType {
   name: string;
   price: bigint;
-  maxMintPerAddress: number;
-  maxSupply: number;
+  maxMintPerAddress: bigint;
+  maxSupply: bigint;
 }
 
 export interface E2ETestConfigType {
-  maxMintPerTransaction: number;
-  collectionMaxSupply: number;
-  maxSupplyForDev: number;
+  maxMintPerTransaction: bigint;
+  collectionMaxSupply: bigint;
+  maxSupplyForDev: bigint;
   rootSignerAddress: string;
   baseURI: string;
   unRevealedUri: string;

@@ -10,7 +10,7 @@ const ROOT_SIGNER_PRIVATE_KEY = process.env.ROOT_SIGNER_PRIVATE_KEY as string;
 
 interface IBackendSignResponse {
   messageHash: string;
-  signature: string;
+  signature: `0x${string}`;
 }
 
 export const backendSign = (
@@ -28,7 +28,7 @@ export const backendSign = (
     const signature = EthCrypto.sign(
       signerPrivateKey || ROOT_SIGNER_PRIVATE_KEY,
       messageHash
-    );
+    ) as `0x${string}`;
 
     resolve({
       messageHash,
