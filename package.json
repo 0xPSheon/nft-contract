@@ -7,7 +7,9 @@
     "test": "npx hardhat test",
     "contract-size": "npx hardhat size-contracts",
     "generate-abi": "npx hardhat export-abi",
-    "docs": "npx hardhat docgen"
+    "docs": "npx hardhat docgen",
+    "utils:backend-sign": "hardhat run scripts/backend-sign.ts",
+    "utils:create-account": "hardhat run scripts/create-account.ts"
   },
   "repository": {
     "type": "git",
