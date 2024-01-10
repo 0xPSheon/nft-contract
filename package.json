@@ -1,6 +1,6 @@
 {
   "name": "nft-contract",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "For NFT course",
   "scripts": {
     "compile": "npx hardhat compile",
