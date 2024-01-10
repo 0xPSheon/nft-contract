@@ -8,20 +8,17 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { backendSign } from "./helpers";
 
 // ** Types
-import type {
-  Address,
-  WalletClient,
-  PublicClient as ViemPublicClient,
-} from "viem";
+import type { Address, PublicClient as ViemPublicClient } from "viem";
+import type { WalletClient } from "@nomicfoundation/hardhat-viem/src/types";
 import type { E2ETestConfigType } from "../types/testTypes";
 
 // ****************
 // ** E2E Config **
 // ****************
 const config: E2ETestConfigType = {
-  maxMintPerTransaction: 5,
-  collectionMaxSupply: 40,
-  maxSupplyForDev: 15,
+  maxMintPerTransaction: BigInt(5),
+  collectionMaxSupply: BigInt(40),
+  maxSupplyForDev: BigInt(15),
   rootSignerAddress: process.env.ROOT_SIGNER_ADDRESS as string,
   baseURI: "ipfs://QmTecK6aZLBteHcx7zP7jCgWELFwkPPgF4aWBJmB7RJnDg/",
   unRevealedUri: "ipfs://QmeUBYxjyWkmySSosnXh4bSTYrenb996Zy6VvmkggT5Qgu/0.png",
@@ -29,20 +26,20 @@ const config: E2ETestConfigType = {
     Initialize: {
       name: "Initialize",
       price: parseEther("0.05"),
-      maxMintPerAddress: 0,
-      maxSupply: 0,
+      maxMintPerAddress: BigInt(0),
+      maxSupply: BigInt(0),
     },
     "Free Mint": {
       name: "Free Mint",
       price: parseEther("0"),
-      maxMintPerAddress: 5,
-      maxSupply: 15,
+      maxMintPerAddress: BigInt(5),
+      maxSupply: BigInt(15),
     },
     "Public Sale": {
       name: "Public Sale",
       price: parseEther("0.5"),
-      maxMintPerAddress: 5,
-      maxSupply: 10,
+      maxMintPerAddress: BigInt(5),
+      maxSupply: BigInt(10),
     },
   },
 };
@@ -126,19 +123,19 @@ describe("NFT contract", function () {
 
     it("has correct address limitation during mint", async function () {
       expect(await MainContract.read.maxMintPerTx()).to.equal(
-        BigInt(config.maxMintPerTransaction)
+        config.maxMintPerTransaction
       );
     });
 
     it("has correct collection size", async function () {
       expect(await MainContract.read.collectionMaxSupply()).to.equal(
-        BigInt(config.collectionMaxSupply)
+        config.collectionMaxSupply
       );
     });
 
     it("has correct max supply for dev", async function () {
       expect(await MainContract.read.maxSupplyForDev()).to.equal(
-        BigInt(config.maxSupplyForDev)
+        config.maxSupplyForDev
       );
     });
 
@@ -189,10 +186,10 @@ describe("NFT contract", function () {
         config.phases.Initialize.price
       );
       expect(await MainContract.read.currentPhaseMaxMintPerAddress()).to.equal(
-        BigInt(config.phases.Initialize.maxMintPerAddress)
+        config.phases.Initialize.maxMintPerAddress
       );
       expect(await MainContract.read.currentPhaseMaxSupply()).to.equal(
-        BigInt(config.phases.Initialize.maxSupply)
+        config.phases.Initialize.maxSupply
       );
     });
 
@@ -220,7 +217,7 @@ describe("NFT contract", function () {
       await expect(
         MainContract.write.mintCardsForAddress([
           addrTeam01.account!.address,
-          config.maxSupplyForDev - 1,
+          config.maxSupplyForDev - BigInt(1),
         ])
       ).to.be.rejectedWith("Can only mint a multiple of the maxBatchSize");
 
@@ -241,9 +238,9 @@ describe("NFT contract", function () {
       );
       expect(
         await MainContract.read.numberMinted([addrTeam01.account!.address])
-      ).to.equal(BigInt(config.maxSupplyForDev));
+      ).to.equal(config.maxSupplyForDev);
       expect(await MainContract.read.totalSupply()).to.equal(
-        BigInt(config.maxSupplyForDev)
+        config.maxSupplyForDev
       );
     });
   });
@@ -260,7 +257,7 @@ describe("NFT contract", function () {
       );
 
       await expect(
-        ConnectedFree01MainContract.write.mintCards([addrFree01Sign, 1])
+        ConnectedFree01MainContract.write.mintCards([addrFree01Sign, BigInt(1)])
       ).to.be.rejectedWith("Not authorized");
     });
 
@@ -279,14 +276,14 @@ describe("NFT contract", function () {
       );
       await expect(
         await MainContract.read.currentPhaseMaxMintPerAddress()
-      ).to.be.equal(BigInt(config.phases["Free Mint"].maxMintPerAddress));
+      ).to.be.equal(config.phases["Free Mint"].maxMintPerAddress);
       await expect(await MainContract.read.currentPhaseMaxSupply()).to.be.equal(
-        BigInt(config.phases["Free Mint"].maxSupply)
+        config.phases["Free Mint"].maxSupply
       );
     });
 
     it("should not able to mint public", async function () {
-      const amount = 1;
+      const amount = BigInt(1);
       const price = await MainContract.read.currentPhasePrice();
       const ConnectedFreee01MainContract = await getConnectedClientContract(
         addrFree01
@@ -297,13 +294,13 @@ describe("NFT contract", function () {
       ).to.be.rejectedWith("Not public phase");
       await expect(
         ConnectedFreee01MainContract.write.mintCardsPublic([amount], {
-          value: price * BigInt(amount),
+          value: price * amount,
         })
       ).to.be.rejectedWith("Not public phase");
     });
 
     it("should able to mint with correct signature and total supply should be update", async function () {
-      const amount = 1;
+      const amount = BigInt(1);
       const currentPhaseName = await MainContract.read.currentPhaseName();
       const price = await MainContract.read.currentPhasePrice();
       const ConnectedFreee01MainContract = await getConnectedClientContract(
@@ -326,13 +323,13 @@ describe("NFT contract", function () {
       await ConnectedFreee01MainContract.write.mintCards(
         [addrFreee01Sign, amount],
         {
-          value: price * BigInt(amount),
+          value: price * amount,
         }
       );
       await ConnectedFreee02MainContract.write.mintCards(
         [addrFreee02Sign, amount],
         {
-          value: price * BigInt(amount),
+          value: price * amount,
         }
       );
 
@@ -346,7 +343,7 @@ describe("NFT contract", function () {
     });
 
     it("should able to bulk mint with correct signature and total supply should be update", async function () {
-      const amount = 4;
+      const amount = BigInt(4);
       const currentPhaseName = await MainContract.read.currentPhaseName();
       const price = await MainContract.read.currentPhasePrice();
       const ConnectedFreee01MainContract = await getConnectedClientContract(
@@ -368,31 +365,31 @@ describe("NFT contract", function () {
 
       await expect(
         ConnectedFreee01MainContract.write.mintCards(
-          [addrFreee01Sign, amount + 1],
+          [addrFreee01Sign, amount + BigInt(1)],
           {
-            value: price * BigInt(amount + 1),
+            value: price * (amount + BigInt(1)),
           }
         )
       ).to.be.rejectedWith("Over phase limit");
       await ConnectedFreee01MainContract.write.mintCards(
         [addrFreee01Sign, amount],
         {
-          value: price * BigInt(amount),
+          value: price * amount,
         }
       );
 
       await expect(
         ConnectedFreee02MainContract.write.mintCards(
-          [addrFreee02Sign, amount + 1],
+          [addrFreee02Sign, amount + BigInt(1)],
           {
-            value: price * BigInt(amount + 1),
+            value: price * (amount + BigInt(1)),
           }
         )
       ).to.be.rejectedWith("Over phase limit");
       await ConnectedFreee02MainContract.write.mintCards(
         [addrFreee02Sign, amount],
         {
-          value: price * BigInt(amount),
+          value: price * amount,
         }
       );
       expect(await MainContract.read.ownerOf([18])).to.equal(
@@ -423,7 +420,7 @@ describe("NFT contract", function () {
     });
 
     it("should not able to mint after reach address cap even sending NFT to another address", async function () {
-      const amount = 1;
+      const amount = BigInt(1);
       const currentPhaseName = await MainContract.read.currentPhaseName();
       const price = await MainContract.read.currentPhasePrice();
       const ConnectedFree01MainContract = await getConnectedClientContract(
@@ -450,7 +447,7 @@ describe("NFT contract", function () {
 
       await expect(
         ConnectedFree01MainContract.write.mintCards([addrFree01Sign, amount], {
-          value: price * BigInt(amount),
+          value: price * amount,
         })
       ).to.be.rejectedWith("Over phase limit");
       expect(
@@ -463,7 +460,7 @@ describe("NFT contract", function () {
     });
 
     it("should be refunded when overpaid", async function () {
-      const amount = 5;
+      const amount = BigInt(5);
       const currentPhaseName = await MainContract.read.currentPhaseName();
       const price = await MainContract.read.currentPhasePrice();
       const ConnectedTeam02MainContract = await getConnectedClientContract(
@@ -511,7 +508,7 @@ describe("NFT contract", function () {
         })
       ).to.equal(
         team02OriginBalance -
-          price * BigInt(amount) -
+          price * amount -
           cumulativeGasUsed * effectiveGasPrice
       );
       expect(await MainContract.read.totalSupply()).to.equal(BigInt(30));
@@ -523,12 +520,13 @@ describe("NFT contract", function () {
       });
       const expectedBalance = config.phases["Free Mint"].price * BigInt(15);
 
-      expect(balanceOfContract).to.equal(BigInt(expectedBalance));
+      expect(balanceOfContract).to.equal(expectedBalance);
     });
   });
 
   describe("Public Sale Stage", async () => {
     it("should not able to mint before setting phase", async function () {
+      const amount = BigInt(1);
       const ConnectedPub01MainContract = await getConnectedClientContract(
         addrPub01
       );
@@ -538,10 +536,10 @@ describe("NFT contract", function () {
         "Public Sale"
       );
       await expect(
-        ConnectedPub01MainContract.write.mintCards([wrongSign, 1])
+        ConnectedPub01MainContract.write.mintCards([wrongSign, amount])
       ).to.be.rejectedWith("Not authorized");
       await expect(
-        ConnectedPub01MainContract.write.mintCardsPublic([1])
+        ConnectedPub01MainContract.write.mintCardsPublic([amount])
       ).to.be.rejectedWith("Not public phase");
     });
 
@@ -561,14 +559,14 @@ describe("NFT contract", function () {
       );
       await expect(
         await MainContract.read.currentPhaseMaxMintPerAddress()
-      ).to.be.equal(BigInt(config.phases["Public Sale"].maxMintPerAddress));
+      ).to.be.equal(config.phases["Public Sale"].maxMintPerAddress);
       await expect(await MainContract.read.currentPhaseMaxSupply()).to.be.equal(
-        BigInt(config.phases["Public Sale"].maxSupply)
+        config.phases["Public Sale"].maxSupply
       );
     });
 
     it("should not able mint with backend sign", async function () {
-      const amount = 1;
+      const amount = BigInt(1);
       const currentPhaseName = await MainContract.read.currentPhaseName();
       const price = await MainContract.read.currentPhasePrice();
       const ConnectedPub01MainContract = await getConnectedClientContract(
@@ -585,14 +583,14 @@ describe("NFT contract", function () {
       ).to.be.rejectedWith("Not legal phase");
       await expect(
         ConnectedPub01MainContract.write.mintCards([addrPub01Sign, amount], {
-          value: price * BigInt(amount),
+          value: price * amount,
         })
       ).to.be.rejectedWith("Not legal phase");
       expect(await MainContract.read.totalSupply()).to.equal(BigInt(30));
     });
 
     it("should able to mint and total supply should be update", async function () {
-      const amount = 1;
+      const amount = BigInt(1);
       const price = await MainContract.read.currentPhasePrice();
       const ConnectedPub01MainContract = await getConnectedClientContract(
         addrPub01
@@ -609,10 +607,10 @@ describe("NFT contract", function () {
       ).to.be.rejectedWith("Not enough ether sent");
 
       await ConnectedPub01MainContract.write.mintCardsPublic([amount], {
-        value: price * BigInt(amount),
+        value: price * amount,
       });
       await ConnectedPub02MainContract.write.mintCardsPublic([amount], {
-        value: price * BigInt(amount),
+        value: price * amount,
       });
 
       expect(await MainContract.read.ownerOf([31])).to.equal(
@@ -625,7 +623,7 @@ describe("NFT contract", function () {
     });
 
     it("should able to bulk mint and total supply should be update", async function () {
-      const amount = 4;
+      const amount = BigInt(4);
       const price = await MainContract.read.currentPhasePrice();
       const ConnectedPub01MainContract = await getConnectedClientContract(
         addrPub01
@@ -638,24 +636,24 @@ describe("NFT contract", function () {
         ConnectedPub01MainContract.write.mintCardsPublic([amount])
       ).to.be.rejectedWith("Not enough ether sent");
       await expect(
-        ConnectedPub01MainContract.write.mintCardsPublic([amount + 1], {
-          value: price * BigInt(amount + 1),
+        ConnectedPub01MainContract.write.mintCardsPublic([amount + BigInt(1)], {
+          value: price * (amount + BigInt(1)),
         })
       ).to.be.rejectedWith("Over phase limit");
       await expect(
         ConnectedPub02MainContract.write.mintCardsPublic([amount])
       ).to.be.rejectedWith("Not enough ether sent");
       await expect(
-        ConnectedPub02MainContract.write.mintCardsPublic([amount + 1], {
-          value: price * BigInt(amount + 1),
+        ConnectedPub02MainContract.write.mintCardsPublic([amount + BigInt(1)], {
+          value: price * (amount + BigInt(1)),
         })
       ).to.be.rejectedWith("Over phase limit");
 
       await ConnectedPub01MainContract.write.mintCardsPublic([amount], {
-        value: price * BigInt(amount),
+        value: price * amount,
       });
       await ConnectedPub02MainContract.write.mintCardsPublic([amount], {
-        value: price * BigInt(amount),
+        value: price * amount,
       });
 
       expect(await MainContract.read.ownerOf([33])).to.equal(
@@ -686,7 +684,7 @@ describe("NFT contract", function () {
     });
 
     it("should not able to mint after reach address cap even sending NFT to another address", async function () {
-      const amount = 1;
+      const amount = BigInt(1);
       const price = await MainContract.read.currentPhasePrice();
       const ConnectedPub01MainContract = await getConnectedClientContract(
         addrPub01
@@ -708,7 +706,7 @@ describe("NFT contract", function () {
       );
       await expect(
         ConnectedPub01MainContract.write.mintCardsPublic([amount], {
-          value: price * BigInt(amount),
+          value: price * amount,
         })
       ).to.be.rejectedWith("Over phase limit");
       expect(
@@ -721,7 +719,7 @@ describe("NFT contract", function () {
     });
 
     it("should not able to mint after reach collection cap", async function () {
-      const amount = 1;
+      const amount = BigInt(1);
       const price = await MainContract.read.currentPhasePrice();
       const ConnectedPub01MainContract = await getConnectedClientContract(
         addrPub01
@@ -732,7 +730,7 @@ describe("NFT contract", function () {
       ).to.be.rejectedWith("Not enough ether sent");
       await expect(
         ConnectedPub01MainContract.write.mintCardsPublic([amount], {
-          value: price * BigInt(amount),
+          value: price * amount,
         })
       ).to.be.rejectedWith("Over phase limit");
       expect(await MainContract.read.totalSupply()).to.equal(BigInt(40));
